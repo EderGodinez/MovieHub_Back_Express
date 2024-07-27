@@ -1,31 +1,16 @@
 import express from 'express';
-
+import { registerMovie,GetMovieById,UpdateMovie,DeleteMovieById,getAllMovies,getTrendingMovies } from './controller/MoviesController.js';
 const router = express.Router();
-
 // Define your movie routes here
-router.get('/', (req, res) => {
-    // Handle GE for all movies
-    res.send('GET /movies');
-});
+router.get('/', getAllMovies);
 
-router.get('/:id', (req, res) => {
-    // Handle GE for a specific movie by ID
-    res.send('GET /movies/:id');
-});
+router.get('/:id', GetMovieById);
 
-router.post('/', (req, res) => {
-    // Handle POS to create a new movie
-    res.send('POST /movies');
-});
+router.post('/', registerMovie);
 
-router.patch('/:id', (req, res) => {
-    // Handle PATC to update a movie by ID
-    res.send('PATCH /movies/:id');
-});
+router.patch('/:id', UpdateMovie);
 
-router.delete('/:id', (req, res) => {
-    // Handle DELET to delete a movie by ID
-    res.send('DELETE /movies/:id');
-});
+router.delete('/:id', DeleteMovieById);
+
 
 export default router;

@@ -3,6 +3,7 @@ import { uploadFile,GetById,DeleteById,upload } from './controller/filesControll
 
 const router = express.Router();
 
+
 router.get('/:id',GetById);
 
 router.post('/',upload.single('file'),uploadFile);

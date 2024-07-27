@@ -13,5 +13,4 @@ router.put('/:id', UpdateUser);
 router.delete('/:id',DeleteUserById);
 // POST /users/register
 router.post('/register', RegisterUser);
-
 export default router;

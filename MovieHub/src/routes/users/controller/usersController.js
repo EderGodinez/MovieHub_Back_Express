@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 export const GetAllUsers = async (req, res) => {
     try {
         const pool = await getConnection();
-        const result = await pool.request().query('SELECT * FROM users');
+        const result = await pool.request().query('SELECT * FROM Users');
         res.json(result.recordset);
     } catch (error) {
         console.log(error);
@@ -14,7 +14,7 @@ export const GetById= async(req, res) => {
     const userId = req.params.id;
     try{
         const pool = await getConnection();
-        const result = await pool.request().query(`SELECT Id,Name,Email FROM users WHERE id = ${userId}`);
+        const result = await pool.request().query(`SELECT Id,Name,Email FROM Users WHERE id = ${userId}`);
         res.json(result.recordset[0]);
     }
     catch(err){
@@ -24,20 +24,24 @@ export const GetById= async(req, res) => {
 }
 export const login=async(req, res) => {
     const {email, password} = req.body;
-    try{
+    try {
         const pool = await getConnection();
-        const HashPassword = bcrypt.hashSync(password, 10); 
-        const result = await pool.request().query(`SELECT * FROM users WHERE email = '${email}' AND password = '${HashPassword}'`);
-        if(result.recordset.length > 0){
-            res.json({message: `Login de usuario exitoso`,user:result.recordset[0]});
+        const result = await pool.request().query(`SELECT * FROM Users WHERE Email = '${email}'`);
+        if (result.recordset.length > 0) {
+            const user = result.recordset[0];
+            const hashedPassword = user.Password;
+            const isCorrectPass = await bcrypt.compare(password, hashedPassword);
+            if (isCorrectPass) {
+                res.json({ message: 'Login de usuario exitoso', user });
+            } else {
+                res.status(404).json({ message: 'Contraseña incorrecta' });
+            }
+        } else {
+            res.status(404).json({ message: 'Usuario o contraseña incorrectos' });
         }
-        else{
-            res.status(404).send('Correo o contraseña incorrectos');
-        }
-    }
-    catch(err){
+    } catch (err) {
         console.log(err);
-        res.json({error: 'Error al iniciar sesion el usuario'});
+        res.status(500).json({ error: 'Error al iniciar sesión el usuario' });
     }
 }
 export const UpdateUser=async (req, res) => {
@@ -47,10 +51,10 @@ export const UpdateUser=async (req, res) => {
     try {
         const pool = await getConnection();
         const result = await pool.request()
-        .input('UserId', sql.int, userId)
-        .input('NewName', sql.NVarChar, name)
-        .input('NewEmail', sql.NVarChar, email)
-        .input('NewPassword', sql.NVarChar, hashedPassword)
+        .input('UserId', mssql.int, userId)
+        .input('NewName', mssql.NVarChar, name)
+        .input('NewEmail', mssql.NVarChar, email)
+        .input('NewPassword', mssql.NVarChar, hashedPassword)
         .execute('UpdateUserInfo');
         if (result.rowsAffected[0] > 0) {
             res.json({userId, name, email, message: 'Usuario actualizado correctamente'});    
@@ -65,7 +69,7 @@ export const DeleteUserById= async (req, res) => {
    try {
     const pool = await getConnection();
     const result = await pool.request()
-    .input('UserId', sql.int, userId)
+    .input('UserId', mssql.int, userId)
     .execute('DeleteUser');
     if(result.rowsAffected[0] > 0){
         res.json({userId, message: 'Usuario eliminado correctamente'});
@@ -81,9 +85,9 @@ export const RegisterUser= async(req, res) => {
     try{
         const pool = await getConnection();
         const result = await pool.request()
-        .input('Name', sql.NVarChar, name)
-        .input('Email', sql.NVarChar, email)
-        .input('Password', sql.NVarChar, hashedPassword)
+        .input('Name', mssql.NVarChar, name)
+        .input('Email', mssql.NVarChar, email)
+        .input('Password', mssql.NVarChar, hashedPassword)
         .execute('CreateNewUser');
 
         if(result.rowsAffected[0] > 0){
@@ -94,4 +98,4 @@ export const RegisterUser= async(req, res) => {
         console.log(err);
         res.json({error: 'Error al crear el usuario'});
     }
-}
+}   
