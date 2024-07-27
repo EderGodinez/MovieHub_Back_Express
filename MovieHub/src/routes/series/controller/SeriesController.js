@@ -2,7 +2,43 @@ import {  mssql ,getConnection} from '../../../db/db.js';
 export const getAllSeries = async (req, res) => {
     try {
         const pool = await getConnection();
-        const result = await pool.request().query(`SELECT * FROM Media WHERE TypeMedia='series'`);
+        const result = await pool.request().query(`SELECT 
+    ME.Id,
+    ME.Title,
+    ME.OriginalTitle,
+    ME.Overview,
+    ME.ImagePath,
+    ME.PosterImage,
+    ME.TrailerLink,
+    ME.WatchLink,
+    ME.AddedDate,
+    ME.TypeMedia,
+    ME.RelaseDate,
+    ME.AgeRate,
+    ME.IsActive,
+    (SELECT STRING_AGG(G.Name, ', ') 
+     FROM GendersList GL
+     INNER JOIN Genders G ON G.Id = GL.GenderId
+     WHERE GL.MediaId = ME.Id) AS Genders  
+    FROM Media ME
+    INNER JOIN GendersList GL ON GL.MediaId=ME.Id
+    INNER JOIN Genders G ON G.Id=GL.GenderId
+    WHERE ME.TypeMedia='series'
+    GROUP BY 
+    ME.Id,
+    ME.Title,
+    ME.OriginalTitle,
+    ME.Overview,
+    ME.ImagePath,
+    ME.PosterImage,
+    ME.TrailerLink,
+    ME.WatchLink,
+    ME.AddedDate,
+    ME.TypeMedia,
+    ME.RelaseDate,
+    ME.AgeRate,
+    ME.IsActive
+    ORDER BY ME.Id`);
         res.json(result.recordset);
     } catch (err) {
         console.log(err);

@@ -3,8 +3,45 @@ import {  mssql ,getConnection} from '../../../db/db.js';
 export const getAllMovies=async (req, res) => {
     const pool = await getConnection();
     const result = await pool.request().
-    query(`SELECT * FROM Media ME
+    query(`SELECT 
+    ME.Id,
+    ME.Title,
+    ME.OriginalTitle,
+    ME.Overview,
+    ME.ImagePath,
+    ME.PosterImage,
+    ME.TrailerLink,
+    ME.WatchLink,
+    ME.AddedDate,
+    ME.TypeMedia,
+    ME.RelaseDate,
+    ME.AgeRate,
+    ME.IsActive,
+    M.Duration,
+    (SELECT STRING_AGG(G.Name, ', ') 
+     FROM GendersList GL
+     INNER JOIN Genders G ON G.Id = GL.GenderId
+     WHERE GL.MediaId = ME.Id) AS Genders  
+    FROM Media ME
 	INNER JOIN Movie M ON ME.Id=M.MediaId 
+    INNER JOIN GendersList GL ON GL.MediaId=ME.Id
+    INNER JOIN Genders G ON G.Id=GL.GenderId
+    WHERE ME.TypeMedia='movie'
+    GROUP BY 
+    ME.Id,
+    ME.Title,
+    ME.OriginalTitle,
+    ME.Overview,
+    ME.ImagePath,
+    ME.PosterImage,
+    ME.TrailerLink,
+    ME.WatchLink,
+    ME.AddedDate,
+    ME.TypeMedia,
+    ME.RelaseDate,
+    ME.AgeRate,
+    ME.IsActive,
+    M.Duration
     ORDER BY ME.Id`);
     res.json(result.recordset);
 }
@@ -38,15 +75,46 @@ export const registerMovie =async (req, res) => {
 
 // Function to get a movie by ID
 export const GetMovieById = async (req, res) => {
-   const movieId = req.params.id;
+   try {
+    const movieId = req.params.id;
     const pool = await getConnection();
     const result = await pool.request()
-    .input('MovieId', mssql.int, movieId).query(`
-    SELECT * FROM Media ME
-	INNER JOIN Movie M ON ME.Id=M.MediaId
-    WHERE ME.Id = @MovieId 
-    ORDER BY ME.Id 
+    .input('MovieId', mssql.Int, movieId).query(`
+   SELECT 
+    ME.Id,
+    ME.Title,
+    ME.OriginalTitle,
+    ME.Overview,
+    ME.ImagePath,
+    ME.PosterImage,
+    ME.TrailerLink,
+    ME.WatchLink,
+    ME.AddedDate,
+    ME.TypeMedia,
+    ME.RelaseDate,
+    ME.AgeRate,
+    ME.IsActive,
+    M.Duration,
+    (SELECT STRING_AGG(G.Name, ', ') 
+     FROM GendersList GL
+     INNER JOIN Genders G ON G.Id = GL.GenderId
+     WHERE GL.MediaId = ME.Id) AS Genders
+FROM Media ME
+INNER JOIN Movie M ON ME.Id = M.MediaId
+WHERE ME.Id = @MovieId AND ME.TypeMedia='movie'
     `)
+    if (result.recordset.length === 0) {
+        return res.status(404).json({ error: 'Pelicula no encontrada' });
+    }
+    else{
+        const GendersArray=result.recordset[0].Genders.split(', ');
+        result.recordset[0].Genders=GendersArray;
+        res.json(result.recordset[0]);
+    }
+   } catch (error) {
+       console.log(error);
+        res.status(500).json({error: 'Error al obtener la pelicula' });
+   }
 }
 
 // Function to update a movie

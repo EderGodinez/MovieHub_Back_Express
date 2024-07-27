@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from 'dotenv';
+import cors from 'cors';
 // Import modular routers
 import userRouter from './src/routes/users/routes.js';
 import seriesRouter from './src/routes/series/routes.js';
@@ -10,6 +11,9 @@ import {getTrendingMovies} from './src/routes/movies/controller/MoviesController
 dotenv.config();
 const app = express();
 app.use(express.json());
+app.use(cors({
+  origin:'*'
+}))
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 const PORT = process.env.PORT;
