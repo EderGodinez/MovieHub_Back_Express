@@ -79,6 +79,11 @@ node -v
 
 2. The server will be running on `http://localhost:3000`.
 
+## Database
+
+![Relacional Model](DB/Diagrama_MovieHub.png)
+![SQL Server](DB/Diagrama_MovieHub_SQL_Server.png)
+
 ## Routes
 
 ### Files Routes
