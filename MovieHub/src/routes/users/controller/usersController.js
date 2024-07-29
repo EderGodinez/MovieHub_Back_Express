@@ -89,8 +89,8 @@ export const RegisterUser= async(req, res) => {
         .input('Email', mssql.NVarChar, email)
         .input('Password', mssql.NVarChar, hashedPassword)
         .execute('CreateNewUser');
-
-        if(result.rowsAffected[0] > 0){
+        console.log(result);
+        if(result.recordset.length > 0){
             res.json({name, email,message: 'Usuario creado correctamente'});
         }
     }
